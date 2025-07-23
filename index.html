@@ -150,8 +150,8 @@
     </div>
 
     <script>
-        // 直接嵌入金句数据进行测试
-        const quotes = [
+        // 備用金句數據
+        const fallbackQuotes = [
             "如果我不開心的時候就吃東西，也只會感受到短暫的安慰。接著就會面臨三個問題：原本的問題、失去控制而心情變差、體重增加。當我因為情緒而想吃東西時，我想面對一個問題，還是三個問題？",
             "每個決定都很重要。我的每個選擇都會增強神經的連結。",
             "無論如何我都會有負擔：要不就是努力維持健康的負擔、要不就是因為多吃少動導致的身體負擔。至少當我努力維持健康飲食時，我可以得到許多正面效益。",
@@ -170,7 +170,36 @@
             "擁有健康飲食習慣的自己，長得如何？"
         ];
         
+        let quotes = [];
         let currentQuoteIndex = -1;
+
+        // 載入金句資料
+        async function loadQuotes() {
+            try {
+                console.log('嘗試載入 quotes.json...');
+                const response = await fetch('./quotes.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                quotes = data.quotes;
+                
+                if (quotes.length === 0) {
+                    throw new Error('金句資料為空');
+                }
+                
+                console.log('成功載入 JSON 文件，共', quotes.length, '條金句');
+                
+            } catch (error) {
+                console.warn('載入 JSON 文件失敗，使用備用數據:', error);
+                quotes = fallbackQuotes;
+            }
+            
+            // 載入完成後顯示第一句金句
+            getNewQuote();
+        }
 
         // 顯示新的金句
         function getNewQuote() {
@@ -195,9 +224,7 @@
         }
 
         // 頁面載入時執行
-        window.addEventListener('load', () => {
-            getNewQuote();
-        });
+        window.addEventListener('load', loadQuotes);
 
         // 防止按鈕重複點擊
         let isChanging = false;
