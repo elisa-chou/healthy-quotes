@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日金句</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', '華康標楷體', 'KaiTi', serif;
+            background: linear-gradient(135deg, #b8c5a8 0%, #a5b593 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #4a5a4a;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .title {
+            font-size: 24px;
+            color: #5a6b5a;
+            margin-bottom: 30px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        .quote-container {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .quote {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #4a5d4a;
+            font-style: italic;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            padding: 0 10px;
+        }
+
+        .quote.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quote::before {
+            content: '"';
+            font-size: 24px;
+            color: #7a8a7a;
+            margin-right: 5px;
+        }
+
+        .quote::after {
+            content: '"';
+            font-size: 24px;
+            color: #7a8a7a;
+            margin-left: 5px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(45deg, #7a8a7a, #6b7b6b);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-family: inherit;
+            box-shadow: 0 5px 15px rgba(122, 138, 122, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(122, 138, 122, 0.4);
+            background: linear-gradient(45deg, #6b7b6b, #5c6c5c);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            color: #7a8a7a;
+            font-style: italic;
+        }
+
+        .error {
+            color: #8a9a6a;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            
+            .title {
+                font-size: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .quote {
+                font-size: 16px;
+                line-height: 1.7;
+            }
+            
+            .refresh-btn {
+                padding: 10px 25px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">每日金句</h1>
+        <div class="quote-container">
+            <div class="quote" id="quoteText">載入中...</div>
+        </div>
+        <button class="refresh-btn" id="refreshBtn" onclick="getNewQuote()">換一句</button>
+    </div>
+
+    <script>
+        let quotes = [];
+        let currentQuoteIndex = -1;
+
+        // 載入金句資料
+        async function loadQuotes() {
+            try {
+                const response = await fetch('quotes.json');
+                
+                if (!response.ok) {
+                    throw new Error('無法載入金句資料');
+                }
+                
+                const data = await response.json();
+                quotes = data.quotes;
+                
+                if (quotes.length === 0) {
+                    throw new Error('金句資料為空');
+                }
+                
+                // 載入成功後顯示第一句金句
+                getNewQuote();
+                
+            } catch (error) {
+                console.error('載入金句時發生錯誤:', error);
+                showError();
+            }
+        }
+
+        // 顯示新的金句
+        function getNewQuote() {
+            if (quotes.length === 0) {
+                showError();
+                return;
+            }
+
+            const quoteElement = document.getElementById('quoteText');
+            
+            // 淡出效果
+            quoteElement.classList.remove('show');
+            
+            setTimeout(() => {
+                // 隨機選擇一句金句（避免重複顯示同一句）
+                let newIndex;
+                do {
+                    newIndex = Math.floor(Math.random() * quotes.length);
+                } while (newIndex === currentQuoteIndex && quotes.length > 1);
+                
+                currentQuoteIndex = newIndex;
+                quoteElement.textContent = quotes[currentQuoteIndex];
+                
+                // 淡入效果
+                quoteElement.classList.add('show');
+            }, 250);
+        }
+
+        // 顯示錯誤訊息
+        function showError() {
+            const quoteElement = document.getElementById('quoteText');
+            quoteElement.classList.remove('show');
+            
+            setTimeout(() => {
+                quoteElement.innerHTML = '<div class="error">請確保 quotes.json 文件存在且格式正確<br><br>文件應包含：<br>{"quotes": ["金句1", "金句2", ...]}</div>';
+                quoteElement.classList.add('show');
+            }, 250);
+        }
+
+        // 頁面載入時執行
+        window.addEventListener('load', loadQuotes);
+
+        // 防止按鈕重複點擊
+        let isChanging = false;
+        const originalGetNewQuote = getNewQuote;
+        
+        getNewQuote = function() {
+            if (isChanging) return;
+            isChanging = true;
+            
+            originalGetNewQuote();
+            
+            setTimeout(() => {
+                isChanging = false;
+            }, 500);
+        };
+    </script>
+</body>
+</html>
