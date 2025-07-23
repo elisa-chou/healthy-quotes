@@ -150,41 +150,30 @@
     </div>
 
     <script>
-        let quotes = [];
+        // 直接嵌入金句数据进行测试
+        const quotes = [
+            "如果我不開心的時候就吃東西，也只會感受到短暫的安慰。接著就會面臨三個問題：原本的問題、失去控制而心情變差、體重增加。當我因為情緒而想吃東西時，我想面對一個問題，還是三個問題？",
+            "每個決定都很重要。我的每個選擇都會增強神經的連結。",
+            "無論如何我都會有負擔：要不就是努力維持健康的負擔、要不就是因為多吃少動導致的身體負擔。至少當我努力維持健康飲食時，我可以得到許多正面效益。",
+            "健康飲食好處：衣服好買、當小期的健康美麗媽媽、看起來像妹仔、永遠都有體力陪小期奔跑。",
+            "我要健康，就必須把健康飲食跟運動放在首位。書本、影集跟卡通明天都還能看，把握此刻。",
+            "我需要面對現實。如果我的目標是減重，那就不該吃計畫以外的食物。當然我也可以明天再按照計畫飲食，但過去的經驗告訴我，此刻脫離正軌是不對的。如果我現在拒絕美食的誘惑，明天量體重時，我會很慶幸自己沒有亂吃。",
+            "如果我犯了一個飲食錯誤，就不要再繼續犯更多錯。如果我下樓梯跌倒，我不可能認為自己一路滾下去算了。所以當我飲食破功時，我也不會乾脆大吃特吃。",
+            "周鵬鵬吃，我也想吃！他打網球超過兩小時、打桌球、沒事就揮空拍，你確定要跟他吃一樣？",
+            "坐下來慢慢吃，享受每一口食物。",
+            "轉移注意力4：感受「現在想吃東西的感受」後面有什麼",
+            "轉移注意力3：看小期照片、拿書出來看、寫字、聽podcst",
+            "轉移注意力2：等10分鐘後，再決定",
+            "轉移注意力1：觀察周遭、練習呼吸、站起來走走、伸展身體",
+            "想像戰勝誘惑的自己，備感自豪的樣子。",
+            "每天都吃一包餅乾，是我要的嗎？",
+            "擁有健康飲食習慣的自己，長得如何？"
+        ];
+        
         let currentQuoteIndex = -1;
-
-        // 載入金句資料
-        async function loadQuotes() {
-            try {
-                const response = await fetch('quotes.json');
-                
-                if (!response.ok) {
-                    throw new Error('無法載入金句資料');
-                }
-                
-                const data = await response.json();
-                quotes = data.quotes;
-                
-                if (quotes.length === 0) {
-                    throw new Error('金句資料為空');
-                }
-                
-                // 載入成功後顯示第一句金句
-                getNewQuote();
-                
-            } catch (error) {
-                console.error('載入金句時發生錯誤:', error);
-                showError();
-            }
-        }
 
         // 顯示新的金句
         function getNewQuote() {
-            if (quotes.length === 0) {
-                showError();
-                return;
-            }
-
             const quoteElement = document.getElementById('quoteText');
             
             // 淡出效果
@@ -205,19 +194,10 @@
             }, 250);
         }
 
-        // 顯示錯誤訊息
-        function showError() {
-            const quoteElement = document.getElementById('quoteText');
-            quoteElement.classList.remove('show');
-            
-            setTimeout(() => {
-                quoteElement.innerHTML = '<div class="error">請確保 quotes.json 文件存在且格式正確<br><br>文件應包含：<br>{"quotes": ["金句1", "金句2", ...]}</div>';
-                quoteElement.classList.add('show');
-            }, 250);
-        }
-
         // 頁面載入時執行
-        window.addEventListener('load', loadQuotes);
+        window.addEventListener('load', () => {
+            getNewQuote();
+        });
 
         // 防止按鈕重複點擊
         let isChanging = false;
