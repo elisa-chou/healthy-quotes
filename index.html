@@ -36,11 +36,13 @@
         }
 
         .quote-container {
-            min-height: 120px;
+            min-height: 140px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             margin-bottom: 30px;
+            gap: 15px;
         }
 
         .quote {
@@ -58,6 +60,23 @@
         }
 
         .quote.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .source {
+            font-size: 14px;
+            color: #6a7a6a;
+            font-style: normal;
+            font-weight: normal;
+            font-family: '微軟正黑體', 'Microsoft JhengHei', sans-serif;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.5s ease 0.2s;
+            margin-top: 5px;
+        }
+
+        .source.show {
             opacity: 1;
             transform: translateY(0);
         }
@@ -108,6 +127,10 @@
                 line-height: 1.7;
             }
             
+            .source {
+                font-size: 12px;
+            }
+            
             .refresh-btn {
                 padding: 10px 25px;
                 font-size: 14px;
@@ -119,40 +142,121 @@
     <div class="container">
         <div class="quote-container">
             <div class="quote" id="quoteText">載入中...</div>
+            <div class="source" id="sourceText"></div>
         </div>
         <button class="refresh-btn" id="refreshBtn" onclick="getNewQuote()">換一句</button>
     </div>
 
     <script>
+        // 模擬你的 JSON 資料結構
+        const quotesData = {
+            "quotes": [
+                {
+                    "text": "如果我不開心的時候就吃東西，也只會感受到短暫的安慰。接著就會面臨三個問題：原本的問題、失去控制而心情變差、體重增加。當我因為情緒而想吃東西時，我想面對一個問題，還是三個問題？",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "每個決定都很重要。我的每個選擇都會增強神經的連結。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "無論如何我都會有負擔：要不就是努力維持健康的負擔、要不就是因為多吃少動導致的身體負擔。至少當我努力維持健康飲食時，我可以得到許多正面效益。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "健康飲食好處：衣服好買、當小期的健康美麗媽媽、看起來像妹仔、永遠都有體力陪小期奔跑。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "我要健康，就必須把健康飲食跟運動放在首位。書本、影集跟卡通明天都還能看，把握此刻。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "我需要面對現實。如果我的目標是減重，那就不該吃計畫以外的食物。當然我也可以明天再按照計畫飲食，但過去的經驗告訴我，此刻脫離正軌是不對的。如果我現在拒絕美食的誘惑，明天量體重時，我會很慶幸自己沒有亂吃。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "如果我犯了一個飲食錯誤，就不要再繼續犯更多錯。如果我下樓梯跌倒，我不可能認為自己一路滾下去算了。所以當我飲食破功時，我也不會乾脆大吃特吃。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "周鵬鵬吃，我也想吃！他打網球超過兩小時、打桌球、沒事就揮空拍，你確定要跟他吃一樣？",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "坐下來慢慢吃，享受每一口食物。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "轉移注意力4：感受「現在想吃東西的感受」後面有什麼",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "轉移注意力3：看小期照片、拿書出來看、寫字、聽podcst",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "轉移注意力2：等10分鐘後，再決定",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "轉移注意力1：觀察周遭、練習呼吸、站起來走走、伸展身體",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "想像戰勝誘惑的自己，備感自豪的樣子。",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "每天都吃一包餅乾，是我要的嗎？",
+                    "source": "瘦一輩子的本事"
+                },
+                {
+                    "text": "擁有健康飲食習慣的自己，長得如何？",
+                    "source": "瘦一輩子的本事"
+                }
+            ]
+        };
+        
         // 備用金句數據
         const fallbackQuotes = [
-            "JSON出問題，請除錯"
+            {
+                "text": "JSON出問題，請除錯",
+                "source": "系統錯誤"
+            }
         ];
         
         let quotes = [];
         let currentQuoteIndex = -1;
 
+        // 產生出處文字的函數 - 移除智能生成邏輯
+        function getQuoteSource(quoteData) {
+            return `— ${quoteData.source}`;
+        }
+
         // 載入金句資料
         async function loadQuotes() {
             try {
                 console.log('嘗試載入 quotes.json...');
-                const response = await fetch('./quotes.json');
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // 先使用內建資料
+                quotes = quotesData.quotes;
                 
-                const data = await response.json();
-                quotes = data.quotes;
+                // 你也可以嘗試載入外部 JSON（如果有的話）
+                // const response = await fetch('./quotes.json');
+                // if (response.ok) {
+                //     const data = await response.json();
+                //     quotes = data.quotes;
+                // }
                 
                 if (quotes.length === 0) {
                     throw new Error('金句資料為空');
                 }
                 
-                console.log('成功載入 JSON 文件，共', quotes.length, '條金句');
+                console.log('成功載入金句資料，共', quotes.length, '條金句');
                 
             } catch (error) {
-                console.warn('載入 JSON 文件失敗，使用備用數據:', error);
+                console.warn('載入金句失敗，使用備用數據:', error);
                 quotes = fallbackQuotes;
             }
             
@@ -163,9 +267,11 @@
         // 顯示新的金句
         function getNewQuote() {
             const quoteElement = document.getElementById('quoteText');
+            const sourceElement = document.getElementById('sourceText');
             
             // 淡出效果
             quoteElement.classList.remove('show');
+            sourceElement.classList.remove('show');
             
             setTimeout(() => {
                 // 隨機選擇一句金句（避免重複顯示同一句）
@@ -175,10 +281,15 @@
                 } while (newIndex === currentQuoteIndex && quotes.length > 1);
                 
                 currentQuoteIndex = newIndex;
-                quoteElement.textContent = quotes[currentQuoteIndex];
+                const currentQuote = quotes[currentQuoteIndex];
+                quoteElement.textContent = currentQuote.text;
+                sourceElement.textContent = getQuoteSource(currentQuote);
                 
                 // 淡入效果
-                quoteElement.classList.add('show');
+                setTimeout(() => {
+                    quoteElement.classList.add('show');
+                    sourceElement.classList.add('show');
+                }, 50);
             }, 250);
         }
 
